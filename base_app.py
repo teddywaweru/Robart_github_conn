@@ -90,7 +90,7 @@ try:
 
     show_user_details(user)
     
-except (KeyError, ExcessUsersException):
+except (KeyError,ExcessUsersException):
     st.dataframe(user_df)
 
 

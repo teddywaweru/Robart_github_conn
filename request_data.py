@@ -1,9 +1,10 @@
 import os
 import requests
+import streamlit as st
 
-
-GITHUB_USERNAME = os.environ['GITHUB_LOGIN']
-GITHUB_TOKEN = os.environ['GITHUB_TOKEN']
+# AUTH_TOKEN = st.secrets['GITHUB_USER']
+GITHUB_USERNAME = st.secrets['GITHUB_USER']
+GITHUB_TOKEN = st.secrets['GITHUB_TOKEN']
 AUTH_TOKEN = (GITHUB_USERNAME,GITHUB_TOKEN)
 
 def get_data(url) -> requests.models.Response():
