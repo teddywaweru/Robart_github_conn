@@ -96,7 +96,6 @@ try:
         raise ExcessUsersException
 
     user = User(user_df.iloc[0])
-    print('x')
 
     show_user_details(user)
     
