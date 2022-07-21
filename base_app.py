@@ -9,6 +9,8 @@ from io import BytesIO
 from user import User, show_user_details
 from request_data import get_data
 from custom_exceptions import ExcessUsersException
+from wrapper_func import measure_time
+
 
 st.set_page_config(
     layout='wide'
@@ -17,6 +19,9 @@ st.set_page_config(
 st.sidebar.write('')
 
 
+
+
+@measure_time
 def load_markdown_file(path):
     """Load markdown docs
 
@@ -29,6 +34,8 @@ st.title('Hello World')
 # with open('markdowns\intro.md') as f:
 st.markdown(load_markdown_file('markdowns/intro.md'))
 
+
+@measure_time
 @st.experimental_memo()
 def init_get_data() -> pd.DataFrame():
     res = get_data('https://api.github.com/users')
@@ -37,6 +44,8 @@ def init_get_data() -> pd.DataFrame():
     df = pd.DataFrame(res)
     return df.loc[:4,:]
 
+
+@measure_time
 @st.experimental_memo
 def get_user_data(user) -> pd.DataFrame():
     
@@ -81,16 +90,18 @@ print(res.headers)
 try:
 
     st.dataframe(
-        user_df[['login','name','node_id','html_url','repos_url']]
+        user_df[['login','name','node_id','html_url','repos_url','url']]
         )
     if user_df.shape[0] != 1:   #Only one user should be in the data
         raise ExcessUsersException
 
     user = User(user_df.iloc[0])
+    print('x')
 
     show_user_details(user)
     
 except (KeyError,ExcessUsersException):
+    traceback.print_exc()
     st.dataframe(user_df)
 
 
