@@ -14,9 +14,12 @@ class User:
     def __init__(self,row):
 
         with requests.Session() as session:
+            session.auth = (
+                st.secrets['GITHUB_USER'],st.secrets['GITHUB_TOKEN']
+                )
 
             av_time_start = time()
-            user_avatar = session.get(row['avatar_url'])
+            user_avatar = session.get(row['avatar_url'],)
             av_time_end = time()
 
             repo_time_start = time()
