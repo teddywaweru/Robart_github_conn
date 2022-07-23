@@ -112,12 +112,20 @@ def start_page():
     # AgGrid(load_data(search_user))
 
 
-
-    # Introduction: base data, input points,
-    # Data preview, analysis, sorting
-    # Concept of relying on utilizing a dataset over OOP
-    # Clor schemes
-    # Implement dict rather than class
+    #Pending TODO
+    #Introduction
+    #Search Capability✅
+        #Concurrent Searching
+    #Filtering✅
+        #Different Searching algorithms
+    # Sorting✅
+        #Different Sorting algorithms
+    # Showing repo statistics
+    #Displaying X-rate limit calls
+    #Code refactoring & distribution
+    #Comments
+    #Color schemes
+    #Input point for User's GITHUB_TOKEN & GITHUB_USER
 
 if __name__ == '__main__':
     start_page()
