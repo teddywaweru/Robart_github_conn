@@ -15,25 +15,24 @@ AUTH_TOKEN = (GITHUB_USERNAME,GITHUB_TOKEN)
 @st.experimental_memo(show_spinner=False)
 def get_data(
         url: str, page: int=1
-        ) -> requests.models.Response():
+        ) -> requests.models.Response:
     """_summary_
 
     :param _type_ url: _description_
     :return _type_: _description_
     """    
-    with st.spinner(text='Fetching data'):
-        res = requests.get(f"{url}?page={page}&per_page=100", auth=AUTH_TOKEN)
+    res = requests.get(f"{url}?page={page}&per_page=100", auth=AUTH_TOKEN)
     #pages are statically set to have 100 values per request(maximum value)
 
     return res
 
 @st.experimental_memo
-def get_avatar(url):
+def get_avatar(url) -> Image:
     avatar = get_data(url).content
     return Image.open(BytesIO(avatar))
 
 @st.experimental_memo
-def get_data_async(urls):
+def get_data_async(urls) -> requests.models.Response:
     results = []
     with requests.Session() as session:
         session.auth = AUTH_TOKEN
@@ -43,7 +42,7 @@ def get_data_async(urls):
 
 @measure_time
 @st.experimental_memo(show_spinner=False)
-def get_all_repos(row):
+def get_all_repos(row) -> [requests.models.Response]:
     responses = []
     pages = row['public_repos'] //100       #pages are statically set to have 100 values per request
     with st.spinner(text='Fetching all Repositories'):
@@ -53,8 +52,8 @@ def get_all_repos(row):
     return responses
 
 @measure_time
-@st.experimental_memo
-def save_user_data(row):
+@st.experimental_memo(show_spinner=False)
+def save_user_data(row) -> dict:
     user = {
         'user': row['login'],
         'name': row['name'],
@@ -66,7 +65,7 @@ def save_user_data(row):
     return user
 
 
-def get_api_header():
+def get_api_header() -> requests.models.Response.json:
     res = requests.get('https://api.github.com/rate_limit',auth=AUTH_TOKEN)
     print(res.headers)
     return res.json()

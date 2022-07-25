@@ -63,7 +63,7 @@ def show_user_details(
         filt_option = st.selectbox('Filter Repositories by:',options=SORT_FILT_COLS_DICT.keys())
 
         if filt_option:
-            max_val = user_repos_df[SORT_FILT_COLS_DICT[filt_option]].max()
+            max_val = np.int64(user_repos_df[SORT_FILT_COLS_DICT[filt_option]].max()).item()
             if max_val == 0:
                 st.info(f'{user["name"]} does not have any {filt_option} for any the public repositories.')
                 st.slider(label=f'To limit number of repos by {filt_option}',

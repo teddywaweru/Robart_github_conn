@@ -16,13 +16,9 @@ st.set_page_config(
     layout='wide'
 )
 
-# st.sidebar.write('')
-
-
-
 
 @measure_time
-def load_markdown_file(path):
+def load_markdown_file(path) -> Path:
     """Load markdown docs
 
     :param str path: path to markdown doc
@@ -63,7 +59,7 @@ def get_user_data(user) -> pd.DataFrame():
 
 
 
-def start_page():
+def start_page() -> None:
     col1, col2 = st.columns([3,4])
     with col1:
         search_user = st.text_input(
