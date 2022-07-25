@@ -62,12 +62,17 @@ def get_user_data(user) -> pd.DataFrame():
         return init_get_data()
 
 
-search_user = st.text_input(
-    label='Username to search',
-    placeholder='Enter username ie. teddywaweru, microsoft',
-)
 
 def start_page():
+    col1, col2 = st.columns([3,4])
+    with col1:
+        search_user = st.text_input(
+            label='Username to search',
+            placeholder='Enter username ie. teddywaweru, microsoft',
+    )
+
+    with col2:
+        pass
     user_df = get_user_data(search_user)
     #if no user was found from the search, the DF has 'message' in its columns
     if 'message' in user_df.columns:
@@ -80,18 +85,14 @@ def start_page():
 
     #if search was successful
     else:
-        st.write('Search Successful')
-
-
-
-    # user_ = user_df.apply(lambda x: user_profile(x),axis=1)
+        st.info('Search Successful!')
 
 
     try:
 
         st.dataframe(
-            # user_df[['login','name','node_id','html_url','repos_url','url']]
-            user_df
+            user_df[['login','name','node_id','html_url','repos_url','url']]
+            # user_df
             )
 
         print(len(get_data(user_df.loc[0,'repos_url']).json()))
@@ -99,14 +100,6 @@ def start_page():
             raise ExcessUsersException
 
         show_user_details(save_user_data(user_df.iloc[0]),user_df)
-
-        def check_x_rate_limit():
-            res = get_data('https://api.github.com/rate_limit')
-            print(res.headers)
-        
-        check_x_rate_limit()
-
-
 
 
         
