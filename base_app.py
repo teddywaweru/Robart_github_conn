@@ -77,6 +77,7 @@ def start_page():
     elif user_df.shape == init_get_data().shape:
         st.write("""No search output to display...yet.
         Showing default users provided by the Github API.""")
+        st.dataframe(user_df)
 
     #if search was successful
     else:
@@ -87,33 +88,28 @@ def start_page():
     # user_ = user_df.apply(lambda x: user_profile(x),axis=1)
 
 
-    try:
+        try:
 
-        st.dataframe(
-            # user_df[['login','name','node_id','html_url','repos_url','url']]
-            user_df
-            )
+            st.dataframe(
+                # user_df[['login','name','node_id','html_url','repos_url','url']]
+                user_df
+                )
 
-        print(len(get_data(user_df.loc[0,'repos_url']).json()))
-        if user_df.shape[0] != 1:   #Only one user should be in the data
-            raise ExcessUsersException
+            print(len(get_data(user_df.loc[0,'repos_url']).json()))
+            if user_df.shape[0] != 1:   #Only one user should be in the data
+                raise ExcessUsersException
 
-        show_user_details(save_user_data(user_df.iloc[0]),user_df)
+            show_user_details(save_user_data(user_df.iloc[0]),user_df)
 
-        def check_x_rate_limit():
-            res = get_data('https://api.github.com/rate_limit')
-            print(res.headers)
-        
-        check_x_rate_limit()
+            
+        except (KeyError,ExcessUsersException):
+            traceback.print_exc()
+            st.dataframe(user_df)
 
-
-
-
-        
-    except (KeyError,ExcessUsersException):
-        traceback.print_exc()
-        st.dataframe(user_df)
-
+    def check_x_rate_limit():
+        res = get_data('https://api.github.com/rate_limit')
+        print(res.headers)
+    check_x_rate_limit()
 
 
     # AgGrid(load_data(search_user))
