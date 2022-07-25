@@ -3,4 +3,4 @@ pip==22.0.4
 streamlit==1.10.0
 streamlit-aggrid==0.2.3.post2
 numpy==1.22.3
-
+plotly==5.8.1

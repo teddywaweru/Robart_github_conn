@@ -7,6 +7,10 @@ from wrapper_func import measure_time
 import requests
 from time import time
 import numpy as np
+from st_aggrid import GridOptionsBuilder, AgGrid, GridUpdateMode, DataReturnMode
+from filter_repo_df import filter_repo_df
+from plotly import graph_objects as go
+
 
 
 @measure_time
@@ -31,7 +35,7 @@ def show_user_details(
     }
     SORT_COLS_DICT = {
         'Updated Date':'updated_at', 'Created Date':'created_at',
-        'Pushed Date':'pushed_at'
+        'Pushed Date':'pushed_at',
 
     }
     SORT_COLS_DICT.update(FILT_COLS_DICT)
@@ -44,11 +48,11 @@ def show_user_details(
 
     with col2:
 
-        st.multiselect(
-            'Select additional columns to display.',
-            options=user_repos_df.columns
-        )
-        st.write(f"{user['name']}'s Repositories:")
+        # st.multiselect(
+        #     'Select additional columns to display.',
+        #     options=user_repos_df.columns
+        # )
+        st.markdown(f"### {user['name']}'s Repositories:")
 
         # stargazers = get_data_async(user_repos_df['stargazers_url'])
         
@@ -87,11 +91,13 @@ def show_user_details(
         sort_radio = st.radio('Sort direction:', options=['Ascending','Descending'])
         sort_direction = True if sort_radio=='Ascending' else False
 
-    col1, col2 = st.columns([1.5,6])
+
+
+    col1, col2 = st.columns([6,3])
+
+
     with col1:
-        x = 3 if 4==5 else 9 
-        pass
-    with col2:
+
         cols = ['id', SORT_COLS_DICT[filt_option], SORT_COLS_DICT[sort_option]]
         if SORT_COLS_DICT[filt_option] == SORT_COLS_DICT[sort_option]:
             cols.pop(-1)
@@ -103,19 +109,67 @@ def show_user_details(
                 if col not in ['id', SORT_COLS_DICT[filt_option], SORT_COLS_DICT[sort_option]]
             ]
         )
-        print(cols)
-        if user_repos_df[SORT_COLS_DICT[filt_option]].dtype=='datetime64[ns]':
-            st.dataframe(
-                user_repos_df.loc[user_repos_df[SORT_COLS_DICT[filt_option]] > np.datetime64(filt_val),cols]
-                    .sort_values(SORT_COLS_DICT[sort_option], ascending=sort_direction,kind='mergesort')
-            )
-        else:
-            st.dataframe(
-                user_repos_df.loc[user_repos_df[SORT_COLS_DICT[filt_option]] > filt_val,cols]
-                    .sort_values(SORT_COLS_DICT[sort_option], ascending=sort_direction,kind='mergesort')
-            )
-        # print(user_repos_df['updated_at'].dtype)
         # print(user_repos_df.columns)
+
+        df = filter_repo_df(df=user_repos_df,cols=cols,
+                    filt_option=SORT_COLS_DICT[filt_option],
+                    sort_option=SORT_COLS_DICT[filt_option],
+                    filt_val=filt_val,sort_direction=sort_direction)
+
+
+        gb = GridOptionsBuilder().from_dataframe((df))
+        gb.configure_selection(selection_mode='single',pre_selected_rows=[0])
+        gridOptions = gb.build()
+
+        grid_response = AgGrid(df,gridOptions=gridOptions,
+                        # data_return_mode='AS_INPUT',
+                        theme='blue',reload_data=True,
+                        update_mode='SELECTION_CHANGED',
+                        )
+
+        print(f"======={grid_response['selected_rows']}=======")
+
+        if len(grid_response['selected_rows']) == 0:
+            selected = df.iloc[0]
+            # print(selected)
+        else:    
+            selected = grid_response['selected_rows'][0]
+
+        # print((selected))
+        selected_repo = user_repos_df.loc[user_repos_df['id']==selected['id'],:]\
+                            .iloc[0]
+        # print(selected_repo)
+        selected_repo_df = user_repos_df.loc[user_repos_df['id']==selected['id'],:]
+                    
+
+    with col2:
+    #Name, html_url,description,fork,created_at,updated_at,pushed_at,sie,forks,open_issues,watchers,languages_url
+        st.markdown(f"#### {selected_repo['name']} Repository Details")
+        st.write(f"Repository name: {selected_repo['name']}")
+        st.write(f"URL [Link]({selected_repo['html_url']})")
+        languages = get_data(selected_repo['languages_url']).json()
+
+        if len(languages)==0:
+            st.info('No distribution of languages available for this repository.')
+        else:
+            fig = go.Figure()
+            fig.add_trace(
+                go.Pie(
+                    labels=list(languages.keys()),
+                    values=list(languages.values()),
+                )
+            )
+            fig.update_layout(
+                width=300,height=200,
+                margin=dict(l=0,r=0,b=25,t=0),
+                title={'text':"Distribution of Languages",
+                    'y':0.05,
+                    'yanchor':'bottom'}
+            )
+            st.plotly_chart(fig)
+
+
+
 
     """repo data columns:
     id, name, description, fork, fork_url, languages_url, created_at, updated_at, pushed_at, 

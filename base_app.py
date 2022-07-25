@@ -16,7 +16,7 @@ st.set_page_config(
     layout='wide'
 )
 
-st.sidebar.write('')
+# st.sidebar.write('')
 
 
 
@@ -86,9 +86,6 @@ def start_page():
 
     # user_ = user_df.apply(lambda x: user_profile(x),axis=1)
 
-    res = get_data('https://api.github.com/rate_limit')
-    print(res.headers)
-
 
     try:
 
@@ -102,6 +99,16 @@ def start_page():
             raise ExcessUsersException
 
         show_user_details(save_user_data(user_df.iloc[0]),user_df)
+
+        def check_x_rate_limit():
+            res = get_data('https://api.github.com/rate_limit')
+            print(res.headers)
+        
+        check_x_rate_limit()
+
+
+
+
         
     except (KeyError,ExcessUsersException):
         traceback.print_exc()
