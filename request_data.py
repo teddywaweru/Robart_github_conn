@@ -20,20 +20,19 @@ global CONN
 @st.experimental_memo
 def get_data(
         url: str, page: int=1
-        ) -> requests.models.Response():
+        ) -> requests.models.Response:
     """_summary_
 
     :param _type_ url: _description_
     :return _type_: _description_
     """    
-    
     res = requests.get(f"{url}?page={page}&per_page=100", auth=AUTH_TOKEN)
     #pages are statically set to have 100 values per request(maximum value)
 
     return res
 
 @st.experimental_memo
-def get_avatar(url):
+def get_avatar(url) -> Image:
     avatar = get_data(url).content
     return Image.open(BytesIO(avatar))
 
@@ -97,3 +96,5 @@ async def save_user_data(row):
 
 
     return user
+
+
