@@ -16,13 +16,9 @@ st.set_page_config(
     layout='wide'
 )
 
-# st.sidebar.write('')
-
-
-
 
 @measure_time
-def load_markdown_file(path):
+def load_markdown_file(path) -> Path:
     """Load markdown docs
 
     :param str path: path to markdown doc
@@ -62,12 +58,17 @@ def get_user_data(user) -> pd.DataFrame():
         return init_get_data()
 
 
-search_user = st.text_input(
-    label='Username to search',
-    placeholder='Enter username ie. teddywaweru, microsoft',
-)
 
-async def start_page():
+async def start_page() -> None:
+    col1, col2 = st.columns([3,4])
+    with col1:
+        search_user = st.text_input(
+            label='Username to search',
+            placeholder='Enter username ie. teddywaweru, microsoft',
+    )
+
+    with col2:
+        pass
     user_df = get_user_data(search_user)
     #if no user was found from the search, the DF has 'message' in its columns
     if 'message' in user_df.columns:
@@ -81,7 +82,7 @@ async def start_page():
 
     #if search was successful
     else:
-        st.write('Search Successful')
+        st.info('Search Successful!')
 
 
     try:

@@ -12,16 +12,15 @@ GITHUB_USERNAME = st.secrets['GITHUB_USER']
 GITHUB_TOKEN = st.secrets['GITHUB_TOKEN']
 AUTH_TOKEN = (GITHUB_USERNAME,GITHUB_TOKEN)
 
-
+@st.experimental_memo(show_spinner=False)
 def get_data(
         url: str, page: int=1
-        ) -> requests.models.Response():
+        ) -> requests.models.Response:
     """_summary_
 
     :param _type_ url: _description_
     :return _type_: _description_
     """    
-    
     res = requests.get(f"{url}?page={page}&per_page=100", auth=AUTH_TOKEN)
     #pages are statically set to have 100 values per request(maximum value)
 
@@ -94,8 +93,7 @@ async def save_user_data(row):
     return user
 
 
-def get_api_header():
-    res = requests.get(f'https://api.github.com/rate_limit', auth=AUTH_TOKEN)
+def get_api_header() -> requests.models.Response.json:
+    res = requests.get('https://api.github.com/rate_limit',auth=AUTH_TOKEN)
+    print(res.headers)
     return res.json()
-
-
