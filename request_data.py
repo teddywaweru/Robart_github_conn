@@ -94,3 +94,8 @@ async def save_user_data(row):
     return user
 
 
+def get_api_header():
+    res = requests.get(f'https://api.github.com/rate_limit', auth=AUTH_TOKEN)
+    return res.json()
+
+

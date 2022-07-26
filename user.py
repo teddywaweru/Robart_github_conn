@@ -5,7 +5,7 @@ from datetime import datetime
 import requests
 import streamlit as st
 import pandas as pd
-from request_data import get_data, get_data_async, save_user_data
+from request_data import get_data, get_data_async, save_user_data,get_api_header
 from wrapper_func import measure_time
 import numpy as np
 from st_aggrid import GridOptionsBuilder, AgGrid, GridUpdateMode, DataReturnMode
