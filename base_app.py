@@ -11,6 +11,11 @@ from request_data import get_data
 from custom_exceptions import ExcessUsersException
 from wrapper_func import measure_time
 
+# import ptvsd
+# ptvsd.enable_attach(address=('localhost', 5678))
+# ptvsd.wait_for_attach() # Only include this line if you always wan't to attach the debugger
+
+
 
 st.set_page_config(
     layout='wide'
@@ -32,7 +37,7 @@ st.markdown(load_markdown_file('markdowns/intro.md'))
 
 
 @measure_time
-@st.experimental_memo()
+@st.experimental_memo(show_spinner=False)
 def init_get_data() -> pd.DataFrame():
     res = get_data('https://api.github.com/users')
     print(res.headers)
@@ -42,7 +47,7 @@ def init_get_data() -> pd.DataFrame():
 
 
 @measure_time
-@st.experimental_memo
+@st.experimental_memo(show_spinner=False)
 def get_user_data(user) -> pd.DataFrame():
     
     if user:
@@ -78,7 +83,6 @@ async def start_page() -> None:
     elif user_df.shape == init_get_data().shape:
         st.write("""No search output to display...yet.
         Showing default users provided by the Github API.""")
-        st.dataframe(user_df)
 
     #if search was successful
     else:
@@ -102,7 +106,7 @@ async def start_page() -> None:
         
     except (KeyError,ExcessUsersException):
         traceback.print_exc()
-        st.dataframe(user_df)
+        # st.dataframe(user_df)
 
 def main():
     # LOOP = asyncio.new_event_loop()
