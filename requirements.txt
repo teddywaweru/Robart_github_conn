@@ -5,3 +5,4 @@ streamlit-aggrid==0.2.3.post2
 numpy==1.22.3
 plotly==5.8.1
 nest-asyncio==1.5.5
+aiohttp==3.8.1
