@@ -4,9 +4,6 @@ import streamlit as st
 from PIL import Image
 from io import BytesIO
 from wrapper_func import measure_time
-import aiohttp
-import asyncio
-import json
 
 
 
@@ -14,18 +11,17 @@ import json
 GITHUB_USERNAME = st.secrets['GITHUB_USER']
 GITHUB_TOKEN = st.secrets['GITHUB_TOKEN']
 AUTH_TOKEN = (GITHUB_USERNAME,GITHUB_TOKEN)
-RESPONSES = []
-global CONN
 
-@st.experimental_memo
+
 def get_data(
         url: str, page: int=1
-        ) -> requests.models.Response:
+        ) -> requests.models.Response():
     """_summary_
 
     :param _type_ url: _description_
     :return _type_: _description_
     """    
+    
     res = requests.get(f"{url}?page={page}&per_page=100", auth=AUTH_TOKEN)
     #pages are statically set to have 100 values per request(maximum value)
 

@@ -7,7 +7,7 @@ import asyncio
 from PIL import Image
 from io import BytesIO
 from user import show_user_details
-from request_data import get_data
+from request_data import get_data, save_user_data
 from custom_exceptions import ExcessUsersException
 from wrapper_func import measure_time
 
@@ -67,8 +67,7 @@ search_user = st.text_input(
     placeholder='Enter username ie. teddywaweru, microsoft',
 )
 
-async def start_page():
-    print('---------------done-----------')
+def start_page():
     user_df = get_user_data(search_user)
     #if no user was found from the search, the DF has 'message' in its columns
     if 'message' in user_df.columns:
@@ -78,52 +77,46 @@ async def start_page():
     elif user_df.shape == init_get_data().shape:
         st.write("""No search output to display...yet.
         Showing default users provided by the Github API.""")
-        st.dataframe(user_df)
 
     #if search was successful
     else:
         st.write('Search Successful')
 
-        try:
 
-            st.dataframe(
-                # user_df[['login','name','node_id','html_url','repos_url','url']]
-                user_df
-                )
 
-            print(len(get_data(user_df.loc[0,'repos_url']).json()))
-            if user_df.shape[0] != 1:   #Only one user should be in the data
-                raise ExcessUsersException
+    # user_ = user_df.apply(lambda x: user_profile(x),axis=1)
 
-            await show_user_details(user_df)
 
-            
-        except (KeyError,ExcessUsersException):
-            traceback.print_exc()
-            st.dataframe(user_df)
+    try:
 
-    # def check_x_rate_limit():
-    #     res = get_data('https://api.github.com/rate_limit')
-    #     print(res.headers)
-    # check_x_rate_limit()
+        st.dataframe(
+            # user_df[['login','name','node_id','html_url','repos_url','url']]
+            user_df
+            )
 
-    print('---------------done-----------')
-    return
+        print(len(get_data(user_df.loc[0,'repos_url']).json()))
+        if user_df.shape[0] != 1:   #Only one user should be in the data
+            raise ExcessUsersException
+
+        show_user_details(save_user_data(user_df.iloc[0]),user_df)
+
+        def check_x_rate_limit():
+            res = get_data('https://api.github.com/rate_limit')
+            print(res.headers)
+        
+        check_x_rate_limit()
+
+
+
+
+        
+    except (KeyError,ExcessUsersException):
+        traceback.print_exc()
+        st.dataframe(user_df)
+
+
+
     # AgGrid(load_data(search_user))
-
-
-def main():
-    # LOOP = asyncio.new_event_loop()
-    # asyncio.set_event_loop(LOOP)
-    print('---------------restarting-----------')
-    # LOOP.run_until_complete(start_page())
-    print('---------------done-----------')
-    asyncio.run(start_page())
-
-
-if __name__ == '__main__':
-    main()
-
 
 
     #Pending TODO
@@ -140,3 +133,6 @@ if __name__ == '__main__':
     #Comments
     #Color schemes
     #Input point for User's GITHUB_TOKEN & GITHUB_USER
+
+if __name__ == '__main__':
+    start_page()
