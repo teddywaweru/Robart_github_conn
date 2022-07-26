@@ -7,7 +7,7 @@ import asyncio
 from PIL import Image
 from io import BytesIO
 from user import show_user_details
-from request_data import get_data, save_user_data
+from request_data import get_data
 from custom_exceptions import ExcessUsersException
 from wrapper_func import measure_time
 
@@ -67,7 +67,8 @@ search_user = st.text_input(
     placeholder='Enter username ie. teddywaweru, microsoft',
 )
 
-def start_page():
+async def start_page():
+    print('---------------done-----------')
     user_df = get_user_data(search_user)
     #if no user was found from the search, the DF has 'message' in its columns
     if 'message' in user_df.columns:
@@ -83,11 +84,6 @@ def start_page():
     else:
         st.write('Search Successful')
 
-
-
-    # user_ = user_df.apply(lambda x: user_profile(x),axis=1)
-
-
         try:
 
             st.dataframe(
@@ -99,20 +95,35 @@ def start_page():
             if user_df.shape[0] != 1:   #Only one user should be in the data
                 raise ExcessUsersException
 
-            show_user_details(save_user_data(user_df.iloc[0]),user_df)
+            await show_user_details(user_df)
 
             
         except (KeyError,ExcessUsersException):
             traceback.print_exc()
             st.dataframe(user_df)
 
-    def check_x_rate_limit():
-        res = get_data('https://api.github.com/rate_limit')
-        print(res.headers)
-    check_x_rate_limit()
+    # def check_x_rate_limit():
+    #     res = get_data('https://api.github.com/rate_limit')
+    #     print(res.headers)
+    # check_x_rate_limit()
 
-
+    print('---------------done-----------')
+    return
     # AgGrid(load_data(search_user))
+
+
+def main():
+    # LOOP = asyncio.new_event_loop()
+    # asyncio.set_event_loop(LOOP)
+    print('---------------restarting-----------')
+    # LOOP.run_until_complete(start_page())
+    print('---------------done-----------')
+    asyncio.run(start_page())
+
+
+if __name__ == '__main__':
+    main()
+
 
 
     #Pending TODO
@@ -129,6 +140,3 @@ def start_page():
     #Comments
     #Color schemes
     #Input point for User's GITHUB_TOKEN & GITHUB_USER
-
-if __name__ == '__main__':
-    start_page()

@@ -2,7 +2,7 @@ from PIL import Image
 from io import BytesIO
 import streamlit as st
 import pandas as pd
-from request_data import get_data, get_data_async
+from request_data import get_data, get_data_async, save_user_data
 from wrapper_func import measure_time
 import requests
 from time import time
@@ -10,14 +10,14 @@ import numpy as np
 from st_aggrid import GridOptionsBuilder, AgGrid, GridUpdateMode, DataReturnMode
 from filter_repo_df import filter_repo_df
 from plotly import graph_objects as go
+import asyncio
 
 
 
 @measure_time
-def show_user_details(
-        user: dict, user_df: pd.DataFrame()
-        ) -> None:
+async def show_user_details(user_df: pd.DataFrame) -> None:
 
+    user = await save_user_data(user_df.iloc[0])
     user_repos_df = pd.DataFrame(user['repos'])
 
     user_repos_df[['created_at','updated_at','pushed_at']] = \
@@ -169,7 +169,7 @@ def show_user_details(
             st.plotly_chart(fig)
 
 
-
+    return
 
     """repo data columns:
     id, name, description, fork, fork_url, languages_url, created_at, updated_at, pushed_at, 
