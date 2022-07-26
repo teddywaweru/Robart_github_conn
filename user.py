@@ -63,12 +63,13 @@ def show_user_details(
         filt_option = st.selectbox('Filter Repositories by:',options=SORT_FILT_COLS_DICT.keys())
 
         if filt_option:
-            max_val = np.int64(user_repos_df[SORT_FILT_COLS_DICT[filt_option]].max()).item()
+            max_val = user_repos_df[SORT_FILT_COLS_DICT[filt_option]].max()
             if max_val == 0:
                 st.info(f'{user["name"]} does not have any {filt_option} for any the public repositories.')
                 st.slider(label=f'To limit number of repos by {filt_option}',
                         disabled=True)
-                st.dataframe(user_repos_df)
+                filt_val = 0
+                # st.dataframe(user_repos_df)
  
             else:
                 if user_repos_df[SORT_FILT_COLS_DICT[filt_option]].dtype != 'int64':
@@ -76,6 +77,7 @@ def show_user_details(
                         pd.Timestamp(user_repos_df[SORT_FILT_COLS_DICT[filt_option]].min()))
 
                 else:
+                    max_val = np.int64(max_val).item()
                     filt_val = st.slider(label=f'To limit number of repos by {filt_option}',
                                 min_value=0,max_value=max_val)
     with col2:
