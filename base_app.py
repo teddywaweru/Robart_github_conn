@@ -87,8 +87,8 @@ def start_page() -> None:
     try:
 
         st.dataframe(
-            user_df[['login','name','node_id','html_url','repos_url','url']]
-            # user_df
+            # user_df[['login','name','node_id','html_url','repos_url','url']]
+            user_df
             )
 
         print(len(get_data(user_df.loc[0,'repos_url']).json()))

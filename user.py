@@ -89,6 +89,7 @@ def show_user_details(
 
         sort_radio = st.radio('Sort direction:', options=['Ascending','Descending'])
         sort_direction = True if sort_radio=='Ascending' else False
+        print(sort_direction)
 
 
 
@@ -117,7 +118,7 @@ def show_user_details(
 
         df = filter_repo_df(df=user_repos_df,cols=cols,
                     filt_option=SORT_FILT_COLS_DICT[filt_option],
-                    sort_option=SORT_FILT_COLS_DICT[filt_option],
+                    sort_option=SORT_FILT_COLS_DICT[sort_option],
                     filt_val=filt_val,sort_direction=sort_direction)
 
 
@@ -166,6 +167,7 @@ def show_user_details(
                 go.Pie(
                     labels=list(languages.keys()),
                     values=list(languages.values()),
+                    textposition='inside'
                 )
             )
             fig.update_layout(
@@ -173,7 +175,9 @@ def show_user_details(
                 margin=dict(l=0,r=0,b=25,t=0),
                 title={'text':"Distribution of Languages",
                     'y':0.05,
-                    'yanchor':'bottom'}
+                    'yanchor':'bottom'},
+                uniformtext_minsize=12,
+                # uniformtext_mode='hide'
             )
             st.plotly_chart(fig)
 

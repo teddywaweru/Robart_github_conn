@@ -47,8 +47,9 @@ def get_all_repos(row) -> [requests.models.Response]:
     pages = row['public_repos'] //100       #pages are statically set to have 100 values per request
     with st.spinner(text='Fetching all Repositories'):
         for page in range(1,pages+2):
-            res = get_data(url=row['repos_url'],page=page).json()
-            responses.extend(res)
+            with st.spinner(text=f'Page{page} of {pages+1}'):
+                res = get_data(url=row['repos_url'],page=page).json()
+                responses.extend(res)
     return responses
 
 @measure_time
