@@ -127,7 +127,7 @@ def show_user_details(
 
         grid_response = AgGrid(df,gridOptions=gridOptions,
                         # data_return_mode='AS_INPUT',
-                        theme='blue',reload_data=True,
+                        theme='streamlit',reload_data=True,
                         update_mode='SELECTION_CHANGED',
                         )
 
