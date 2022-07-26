@@ -1,6 +1,5 @@
 from PIL import Image
-from io import BytesIO
-from time import time
+import time
 from datetime import datetime
 import requests
 import streamlit as st
@@ -17,8 +16,8 @@ import asyncio
 
 @measure_time
 async def show_user_details(user_df: pd.DataFrame) -> None:
-    start = time()
-    user = await save_user_data(user_df.iloc[0])
+    start = time.time()
+    user = save_user_data(user_df.iloc[0])
     user_repos_df = pd.DataFrame(user['repos'])
 
     user_repos_df[['created_at','updated_at','pushed_at']] = \
@@ -28,11 +27,11 @@ async def show_user_details(user_df: pd.DataFrame) -> None:
         # pd.to_datetime(user_repos_df[['created_at','updated_at','pushed_at']]) \
         #     .dt.strftime('%Y-%m-%d T%I:%M:%SZ')
 
-    print(f'1------{time()-start}')
+    print(f'1------{time.time()-start}')
     # Dictinoary of Numeric colummns that can be used in sorting
     SORT_FILT_COLS_DICT = {
-        'Updated Date':'updated_at', 'Created Date':'created_at',
-        'Pushed Date':'pushed_at','Size': 'size',
+        'Size': 'size','Updated Date':'updated_at',
+        'Created Date':'created_at', 'Pushed Date':'pushed_at',
         'Watchers': 'watchers_count', 'Forks': 'forks_count',
         'Open Issues': 'open_issues_count', 
     }
@@ -56,7 +55,7 @@ async def show_user_details(user_df: pd.DataFrame) -> None:
 
     col1, col2,_,col3 = st.columns([2,2,2,2])
 
-    print(f'2------{time()-start}')
+    print(f'2------{time.time()-start}')
     with col1:
         st.markdown('#### Repository Data')
         
@@ -93,12 +92,7 @@ async def show_user_details(user_df: pd.DataFrame) -> None:
 
 
 
-    print(f'3------{time()-start}')
-    with col3:
-        pass
-
-
-    print(f'3------{time()-start}')
+    print(f'3------{time.time()-start}')
     with col3:
         pass
 
@@ -137,7 +131,7 @@ async def show_user_details(user_df: pd.DataFrame) -> None:
                         update_mode='SELECTION_CHANGED',
                         )
 
-        print(f'4------{time()-start}')
+        print(f'4------{time.time()-start}')
         x=False
         if st.checkbox(
             label='Download Data?'
@@ -156,7 +150,7 @@ async def show_user_details(user_df: pd.DataFrame) -> None:
         selected_repo = user_repos_df.loc[user_repos_df['id']==selected['id'],:]\
                             .iloc[0]
                     
-        print(f'5------{time()-start}')
+        print(f'5------{time.time()-start}')
     with col2:
     #Name, html_url,description,fork,created_at,updated_at,pushed_at,sie,forks,open_issues,watchers,languages_url
         st.markdown(f"#### {selected_repo['name']} Repository Details")
@@ -193,7 +187,7 @@ async def show_user_details(user_df: pd.DataFrame) -> None:
     # print(api_header['resources']['core']['remaining'])
     # print('------------------')
     print(api_header)
-    print(f'6------{time()-start}')
+    print(f'6------{time.time()-start}')
 
     with col3:
         st.metric(
