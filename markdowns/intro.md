@@ -1,6 +1,6 @@
 ### Github API Data Collector
 
-This application is intended as a Test Proect submission for application at Robart GmbH.
+This application is intended as a Test Project submission for application at Robart GmbH.
 
 This application captures data from the Github API & presents it to the user. The data captured includes:
 - User profile details
