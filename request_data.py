@@ -1,22 +1,17 @@
-import os
-import time
+import asyncio
+from io import BytesIO
+import json
 import requests
 import streamlit as st
 from PIL import Image
-from io import BytesIO
-from wrapper_func import measure_time
 import aiohttp
-import asyncio
-
 import nest_asyncio
+from wrapper_func import measure_time
 
 
-
-# AUTH_TOKEN = st.secrets['GITHUB_USER']
 GITHUB_USERNAME = st.secrets['GITHUB_USER']
 GITHUB_TOKEN = st.secrets['GITHUB_TOKEN']
 AUTH_TOKEN = (GITHUB_USERNAME,GITHUB_TOKEN)
-global CONN,RESPONSES
 
 @st.experimental_memo(show_spinner=False)
 def get_data(
@@ -26,7 +21,7 @@ def get_data(
 
     :param _type_ url: _description_
     :return _type_: _description_
-    """    
+    """
     res = requests.get(f"{url}?page={page}&per_page=100", auth=AUTH_TOKEN)
     #pages are statically set to have 100 values per request(maximum value)
 
@@ -38,13 +33,12 @@ def get_avatar(url) -> Image:
     return Image.open(BytesIO(avatar))
 
 
-# @st.experimental_memo
 async def get_data_async(urls,parallel_requests):
 
     semaphore = asyncio.Semaphore(parallel_requests)
-    CONN = aiohttp.TCPConnector(limit_per_host=100,limit=0,ttl_dns_cache=300)
+    tcp_conn = aiohttp.TCPConnector(limit_per_host=100,limit=0,ttl_dns_cache=300)
 
-    session = aiohttp.ClientSession(connector=CONN)
+    session = aiohttp.ClientSession(connector=tcp_conn)
 
     async def get(url):
         RESPONSES = []
@@ -57,14 +51,9 @@ async def get_data_async(urls,parallel_requests):
     val = await asyncio.gather(*(get(url) for url in urls))
     await session.close()
 
-    CONN.close()
+    tcp_conn.close()
     return val
 
-
-
-# @measure_time
-# @st.experimental_memo
-# def get_all_repos(row):
 
 @measure_time
 @st.experimental_memo(show_spinner=False)
@@ -78,22 +67,19 @@ def save_user_data(row):
     if user['name'] == None:
         user['name'] = row['login']
 
-    # RESPONSES = []
-    pages = row['public_repos'] //100       #pages are statically set to have 100 values per request
+    pages = row['public_repos'] //100
+    #pages are statically set to have 100 values per request
 
     RESPONSES = []
     for page in range(1,pages+2):
         with st.spinner(
             text=f"""
-            API call may take up to {(pages + 1)*2.5} seconds
-            Fetching page {page} of {pages+1}.
+            API call may take up to {(pages + 1)*1.8} seconds
+            Fetching page {page} of {pages+1} of Repositories.
             """):
             res = get_data(url=row['repos_url'],page=page).json()
             RESPONSES.extend(res)
     user['repos'] = RESPONSES    
-    # print(f'{len(RESPONSES)}------------------')
-    # print(f'------------------{pages}')
-
 
     return user
 
@@ -119,12 +105,14 @@ async def save_user_data_async(row):
             res = get_data(url=row['repos_url'],page=page).json()
             RESPONSES.extend(res)
         user['repos'] = RESPONSES    
-        print(f'{len(RESPONSES)}------------------')
-        print(f'------------------{pages}')
 
     else:
         #initiates concurrent request calls
-        urls = [f"{row['repos_url']}?page={page}&per_page=100" for page in range(1,pages+2)]
+        urls = [
+            f"{row['repos_url']}?page={page}&per_page=100"\
+                 for page in range(1,pages+2)
+            ]
+
         loop = asyncio.new_event_loop()
 
         nest_asyncio.apply()
@@ -134,13 +122,11 @@ async def save_user_data_async(row):
         val = loop.run_until_complete(get_data_async(urls, 1))
         
 
-        user['repos'] =  *val[0][0],     #requires additional work: users have varying number of repos
-        # print(user['repos'])
+        user['repos'] =  *val[0][0],
 
     return user
 
 
 def get_api_header() -> requests.models.Response.json:
     res = requests.get('https://api.github.com/rate_limit',auth=AUTH_TOKEN)
-    print(res.headers)
     return res.json()

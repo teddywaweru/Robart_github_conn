@@ -1,21 +1,22 @@
-from PIL import Image
+"""
+Loads all user content to view.
+"""
+
 import time
 from datetime import datetime
-import requests
 import streamlit as st
 import pandas as pd
-from request_data import get_data, get_data_async, save_user_data,get_api_header
-from wrapper_func import measure_time
 import numpy as np
-from st_aggrid import GridOptionsBuilder, AgGrid, GridUpdateMode, DataReturnMode
-from filter_repo_df import filter_repo_df
+from st_aggrid import GridOptionsBuilder, AgGrid
 from plotly import graph_objects as go
-import asyncio
+from filter_repos import filter_repo_df
+from request_data import get_data, save_user_data,get_api_header
+from wrapper_func import measure_time
 
 
 
 @measure_time
-async def show_user_details(user_df: pd.DataFrame) -> None:
+def show_user_details(user_df: pd.DataFrame) -> None:
     start = time.time()
     user = save_user_data(user_df.iloc[0])
     user_repos_df = pd.DataFrame(user['repos'])
@@ -23,17 +24,14 @@ async def show_user_details(user_df: pd.DataFrame) -> None:
     user_repos_df[['created_at','updated_at','pushed_at']] = \
         user_repos_df[['created_at','updated_at','pushed_at']].astype('datetime64')
     user_df['created_at'] = user_df['created_at'].astype('datetime64')
-    # user_repos_df[['created_at','updated_at','pushed_at']] = \
-        # pd.to_datetime(user_repos_df[['created_at','updated_at','pushed_at']]) \
-        #     .dt.strftime('%Y-%m-%d T%I:%M:%SZ')
 
-    print(f'1------{time.time()-start}')
+
     # Dictinoary of Numeric colummns that can be used in sorting
     SORT_FILT_COLS_DICT = {
         'Size': 'size','Updated Date':'updated_at',
         'Created Date':'created_at', 'Pushed Date':'pushed_at',
         'Watchers': 'watchers_count', 'Forks': 'forks_count',
-        'Open Issues': 'open_issues_count', 
+        'Open Issues': 'open_issues_count',
     }
 
 
@@ -43,7 +41,7 @@ async def show_user_details(user_df: pd.DataFrame) -> None:
 
     with col1:
         st.image(user['avatar'], width=200)
-    
+
     with col2:
         st.text(f"Created on: \t\t{user_df.loc[0,'created_at']}")
         st.text(f"Location: \t\t{user_df.loc[0,'location']}")
@@ -55,7 +53,6 @@ async def show_user_details(user_df: pd.DataFrame) -> None:
 
     col1, col2,_,col3 = st.columns([2,2,2,2])
 
-    print(f'2------{time.time()-start}')
     with col1:
         st.markdown('#### Repository Data')
         
@@ -68,7 +65,7 @@ async def show_user_details(user_df: pd.DataFrame) -> None:
                 st.slider(label=f'To limit number of repos by {filt_option}',
                         disabled=True)
                 filt_val = 0
-                # st.dataframe(user_repos_df)
+
  
             else:
                 if user_repos_df[SORT_FILT_COLS_DICT[filt_option]].dtype != 'int64':
@@ -81,24 +78,15 @@ async def show_user_details(user_df: pd.DataFrame) -> None:
                                 min_value=0,max_value=max_val)
     with col2:
         st.markdown('#### :')
-        # st.write('')
-        # st.write('')
+
         sort_options = SORT_FILT_COLS_DICT.keys()
         sort_option = st.selectbox('Sort Repositories by:',sort_options)
 
         sort_radio = st.radio('Sort direction:', options=['Ascending','Descending'])
         sort_direction = True if sort_radio=='Ascending' else False
-        print(sort_direction)
-
-
-
-    print(f'3------{time.time()-start}')
-    with col3:
-        pass
 
 
     col1, col2 = st.columns([6,4])
-
 
     with col1:
 
@@ -110,10 +98,13 @@ async def show_user_details(user_df: pd.DataFrame) -> None:
                 col for col in 
                 ['name','created_at', 'updated_at', 'pushed_at',
                 'forks_count','stargazers_count',]
-                if col not in ['id', SORT_FILT_COLS_DICT[filt_option], SORT_FILT_COLS_DICT[sort_option]]
+                if col not in
+                [
+                    'id', SORT_FILT_COLS_DICT[filt_option],
+                    SORT_FILT_COLS_DICT[sort_option]
+                ]
             ]
         )
-        # print(user_repos_df.columns)
 
         df = filter_repo_df(df=user_repos_df,cols=cols,
                     filt_option=SORT_FILT_COLS_DICT[filt_option],
@@ -121,18 +112,16 @@ async def show_user_details(user_df: pd.DataFrame) -> None:
                     filt_val=filt_val,sort_direction=sort_direction)
 
 
-        gb = GridOptionsBuilder().from_dataframe((df))
-        gb.configure_selection(selection_mode='single',)
-        gridOptions = gb.build()
+        grid_builder = GridOptionsBuilder().from_dataframe((df))
+        grid_builder.configure_selection(selection_mode='single',)
+        grid_options = grid_builder.build()
 
-        grid_response = AgGrid(df,gridOptions=gridOptions,
-                        # data_return_mode='AS_INPUT',
+        grid_response = AgGrid(df,gridOptions=grid_options,
+                        data_return_mode='AS_INPUT',
                         theme='streamlit',reload_data=True,
                         update_mode='SELECTION_CHANGED',
                         )
 
-        print(f'4------{time.time()-start}')
-        x=False
         if st.checkbox(
             label='Download Data?'
         ):
@@ -150,12 +139,12 @@ async def show_user_details(user_df: pd.DataFrame) -> None:
         selected_repo = user_repos_df.loc[user_repos_df['id']==selected['id'],:]\
                             .iloc[0]
                     
-        print(f'5------{time.time()-start}')
     with col2:
-    #Name, html_url,description,fork,created_at,updated_at,pushed_at,sie,forks,open_issues,watchers,languages_url
+
         st.markdown(f"#### {selected_repo['name']} Repository Details")
         st.write(f"Repository name: {selected_repo['name']}")
-        st.write(f"URL [Link]({selected_repo['html_url']})")
+        st.write(f"Repository [URL Link]({selected_repo['html_url']})")
+        st.text(f"""Created:\t \tLast Update:\t\tSize: \n{selected_repo['created_at']}\t{selected_repo['updated_at']}\t{selected_repo['size']}""")
         languages = get_data(selected_repo['languages_url']).json()
 
         if len(languages)==0:
@@ -176,34 +165,22 @@ async def show_user_details(user_df: pd.DataFrame) -> None:
                     'y':0.05,
                     'yanchor':'bottom'},
                 uniformtext_minsize=12,
-                # uniformtext_mode='hide'
+                uniformtext_mode='hide'
             )
             st.plotly_chart(fig)
 
     api_header = get_api_header()
-    # print('------------------')
-    # print(api_header['resources']['core'])
-    # print(api_header['resources']['core']['used'])
-    # print(api_header['resources']['core']['remaining'])
-    # print('------------------')
+
     print(api_header)
-    print(f'6------{time.time()-start}')
 
     with col3:
         st.metric(
                 label="API calls remaining:",
             value=f"""{api_header['resources']['core']['remaining']}
                         / {api_header['resources']['core']['limit']}""" ,
-            # delta=value-10,
         )
-        print(f'')
 
         st.metric(
                 label="Next Reset:",
             value=f"{datetime.fromtimestamp(api_header['resources']['core']['reset'])}",
-            # delta=value-10,
         )
-
-    """repo data columns:
-    id, name, description, fork, fork_url, languages_url, created_at, updated_at, pushed_at, 
-    """

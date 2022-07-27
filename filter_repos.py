@@ -6,12 +6,12 @@ import pandas as pd
 def filter_repo_df(df,cols,
             filt_option,sort_option,
             filt_val,sort_direction,
-            sort_algo='',filt_algo='',
-            **kwargs) -> pd.DataFrame:
+            sort_algo='',filt_algo='quicksort',
+            ) -> pd.DataFrame:
     if df[filt_option].dtype=='datetime64[ns]':
-        print('yes')
         df = df.loc[df[filt_option] > np.datetime64(filt_val),cols]\
-                .sort_values(sort_option, ascending=sort_direction,)
+                .sort_values(sort_option, ascending=sort_direction,
+                        kind=filt_algo)
 
     else:
         df = df.loc[df[filt_option] >= filt_val,cols]\

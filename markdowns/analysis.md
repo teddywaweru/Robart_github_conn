@@ -1,1 +1,0 @@
-Here we have a breakdown of some of the insights gathered for the user

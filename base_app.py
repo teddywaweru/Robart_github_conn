@@ -1,60 +1,62 @@
-import streamlit as st
-from st_aggrid import AgGrid
-import pandas as pd
+"""This is the starting point of the application
+The script loads the initial view for the user. & 
+provides a search input.
+"""
 import traceback
 from pathlib import Path
 import asyncio
-from PIL import Image
-from io import BytesIO
+import streamlit as st
+import pandas as pd
 from user import show_user_details
 from request_data import get_data
-from custom_exceptions import ExcessUsersException
+from custom_exceptions import ExcessUsersException, NoUserException
 from wrapper_func import measure_time
 
-# import ptvsd
-# ptvsd.enable_attach(address=('localhost', 5678))
-# ptvsd.wait_for_attach() # Only include this line if you always wan't to attach the debugger
 
-
-
+# Set page Configuration
 st.set_page_config(
     layout='wide'
 )
 
 
 @measure_time
-def load_markdown_file(path) -> Path:
-    """Load markdown docs
+def load_markdown_file(path) -> str:
+    """Load Markdown docs
 
-    :param str path: path to markdown doc
-    :return str: Markdown text
-    """        
-    return Path(path).read_text()
+    :param str path: path string
+    :return str: String of loaded document
+    """
+    with open(Path(path),'r',encoding='utf-8') as md_f:
+        return md_f.read()
 
-st.title('Hello World')
-# with open('markdowns\intro.md') as f:
-st.markdown(load_markdown_file('markdowns/intro.md'))
 
 
 @measure_time
 @st.experimental_memo(show_spinner=False)
 def init_get_data() -> pd.DataFrame():
+    """load initial user data from Github API
+
+    :return Pandas Dataframe: DataFrame of users
+    """
     res = get_data('https://api.github.com/users')
     print(res.headers)
     res = res.json()
-    df = pd.DataFrame(res)
-    return df.loc[:4,:]
+    init_df = pd.DataFrame(res)
+    return init_df.loc[:4,:]
 
 
 @measure_time
 @st.experimental_memo(show_spinner=False)
 def get_user_data(user) -> pd.DataFrame():
-    
+    """Search for user on Github API using username
+
+    :param str user: username
+    :return pandas DataFrame: user's details DataFrame, or initial DataFrame
+    """
     if user:
         try:
             res = get_data(f'https://api.github.com/users/{user}')
             user_data = res.json()
-            print(res.headers)
             user_data = pd.DataFrame([user_data])
             return user_data
         except:
@@ -65,6 +67,9 @@ def get_user_data(user) -> pd.DataFrame():
 
 
 async def start_page() -> None:
+    st.title('Hello World')
+    st.markdown(load_markdown_file('markdowns/intro.md'))
+
     col1, col2 = st.columns([3,4])
     with col1:
         search_user = st.text_input(
@@ -90,52 +95,64 @@ async def start_page() -> None:
 
 
     try:
-
+        if 'name' not in user_df.columns:
+            raise NoUserException
+        
         st.dataframe(
-            # user_df[['login','name','node_id','html_url','repos_url','url']]
-            user_df
+            user_df[['login','name','node_id','html_url','repos_url','url']]
             )
 
-        print(len(get_data(user_df.loc[0,'repos_url']).json()))
+        if user_df.shape[0] > 1:
+            #default data has more than one column
+            raise NoUserException
+
         if user_df.shape[0] != 1:   #Only one user should be in the data
             raise ExcessUsersException
 
-        await show_user_details(user_df)
+        show_user_details(user_df)
 
-
-        
-    except (KeyError,ExcessUsersException):
+    except KeyError:
+        st.dataframe(user_df)
         traceback.print_exc()
-        # st.dataframe(user_df)
+
+    except ExcessUsersException:
+        st.dataframe(user_df)
+        traceback.print_exc()
+
+    except NoUserException:
+        st.dataframe(user_df)
+        traceback.print_exc()
+
+    except:
+        traceback.print_exc()
 
 def main():
-    # LOOP = asyncio.new_event_loop()
-    # asyncio.set_event_loop(LOOP)
+    """Main function
+    """    
     print('---------------restarting-----------')
-    # LOOP.run_until_complete(start_page())
-    print('---------------done-----------')
     asyncio.run(start_page())
+    print('---------------done-----------------')
 
 
 
-
-    # AgGrid(load_data(search_user))
-
-
-    #Pending TODO
-    #Introduction
-    #Search Capability✅
-        #Concurrent Searching
-    #Filtering✅
-        #Different Searching algorithms
-    # Sorting✅
-        #Different Sorting algorithms
-    # Showing repo statistics
-    #Displaying X-rate limit calls
-    #Code refactoring & distribution
-    #Comments
-    #Color schemes
-    #Input point for User's GITHUB_TOKEN & GITHUB_USER
-
+#Starting point for the application
 if __name__ == '__main__':
     main()
+
+
+
+#Pending TODO 's
+#Introduction✅
+#Search Capability✅
+    #Concurrent Searching
+#Filtering✅
+    #Different Searching algorithms
+# Sorting✅
+    #Different Sorting algorithms
+# Showing repo statistics✅
+#Displaying X-rate limit calls✅
+#Code refactoring & distribution✅
+#Comments
+#Color schemes❌Not functioning
+#Input point for User's GITHUB_TOKEN & GITHUB_USER❌Not feasible
+
